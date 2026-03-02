@@ -34,7 +34,14 @@ def setup_portable_env() -> None:
     """在进程启动时设置所有缓存环境变量，确保不写入系统目录"""
     import os
 
-    models_dir = get_models_dir()
+    # If the user explicitly set VIBEMOUSE_MODELS_DIR, honour it as the cache
+    # root so that config.py's later setdefault calls are consistent.
+    # Otherwise fall back to the portable default next to the exe/project.
+    custom_models_dir = os.getenv("VIBEMOUSE_MODELS_DIR")
+    if custom_models_dir:
+        models_dir = Path(custom_models_dir)
+    else:
+        models_dir = get_models_dir()
     models_dir.mkdir(parents=True, exist_ok=True)
     os.environ.setdefault("MODELSCOPE_CACHE", str(models_dir))
     os.environ.setdefault("HF_HOME", str(models_dir / "hf"))

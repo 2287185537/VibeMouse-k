@@ -53,9 +53,9 @@ a = Analysis(
     noarchive=False,
 )
 
-pyz = PYZ(a.pure)  # noqa: F821 – PYZ is injected by PyInstaller
+pyz = PYZ(a.pure)  # noqa: F821 - PYZ is injected by PyInstaller
 
-exe = EXE(  # noqa: F821 – EXE is injected by PyInstaller
+exe = EXE(  # noqa: F821 - EXE is injected by PyInstaller
     pyz,
     a.scripts,
     [],
@@ -73,7 +73,7 @@ exe = EXE(  # noqa: F821 – EXE is injected by PyInstaller
     entitlements_file=None,
 )
 
-coll = COLLECT(  # noqa: F821 – COLLECT is injected by PyInstaller
+coll = COLLECT(  # noqa: F821 - COLLECT is injected by PyInstaller
     exe,
     a.binaries,
     a.datas,

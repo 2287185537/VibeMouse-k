@@ -61,7 +61,7 @@
 - 手动下载模型并放置到 `models\` 目录：
   ```
   set MODELSCOPE_CACHE=<项目目录>\models
-  python -c "from modelscope.hub.snapshot_download import snapshot_download; snapshot_download('iic/SenseVoiceSmall')"
+  python -c "from modelscope.hub.snapshot_download import snapshot_download; snapshot_download('iic/SenseVoiceSmall'); snapshot_download('iic/SenseVoiceSmall-onnx')"
   ```
 
 ### 识别结果不准确
