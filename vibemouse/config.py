@@ -105,6 +105,14 @@ class AppConfig:
 
 
 def load_config() -> AppConfig:
+    models_dir_raw = os.getenv("VIBEMOUSE_MODELS_DIR")
+    if models_dir_raw:
+        # VIBEMOUSE_MODELS_DIR takes explicit precedence over portable mode defaults.
+        models_dir = Path(models_dir_raw)
+        models_dir.mkdir(parents=True, exist_ok=True)
+        os.environ.setdefault("MODELSCOPE_CACHE", str(models_dir))
+        os.environ.setdefault("HF_HOME", str(models_dir / "hf"))
+
     temp_dir = Path(
         os.getenv("VIBEMOUSE_TEMP_DIR", str(Path(tempfile.gettempdir()) / "vibemouse"))
     )

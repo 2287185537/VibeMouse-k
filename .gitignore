@@ -5,3 +5,8 @@ iic/
 vibemouse.egg-info/
 __pycache__/
 *.pyc
+models/
+temp/
+dist/
+build/
+run_windows.bat
