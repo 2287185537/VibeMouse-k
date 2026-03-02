@@ -3,31 +3,43 @@
 VibeMouse PyInstaller spec 文件
 用法: pyinstaller vibemouse.spec
 """
-from __future__ import annotations
-
-import sys
 from pathlib import Path
 
+from PyInstaller.utils.hooks import collect_all  # noqa: F821 - available in spec context
+
 project_dir = Path(SPECPATH)  # noqa: F821 – SPECPATH is injected by PyInstaller
+
+# Collect all submodules + data for the large AI packages
+_collect_pkgs = ["funasr", "funasr_onnx", "modelscope"]
+_extra_datas: list = []
+_extra_binaries: list = []
+_extra_hidden: list = []
+for _pkg in _collect_pkgs:
+    try:
+        _d, _b, _h = collect_all(_pkg, on_error="warn")
+        _extra_datas += _d
+        _extra_binaries += _b
+        _extra_hidden += _h
+    except Exception as _e:
+        print(f"WARNING: could not collect '{_pkg}': {_e}")
 
 a = Analysis(
     [str(project_dir / "vibemouse" / "main.py")],
     pathex=[str(project_dir)],
-    binaries=[],
+    binaries=_extra_binaries,
     datas=[
         (str(project_dir / "vibemouse"), "vibemouse"),
+        *_extra_datas,
     ],
     hiddenimports=[
-        "funasr",
-        "funasr_onnx",
         "sounddevice",
         "soundfile",
         "pynput",
         "pynput.mouse",
         "pynput.keyboard",
         "comtypes",
-        "modelscope",
         "onnxruntime",
+        *_extra_hidden,
     ],
     hookspath=[],
     hooksconfig={},
