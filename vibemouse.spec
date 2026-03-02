@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_all  # noqa: F821 - available in spec context
 
-project_dir = Path(SPECPATH)  # noqa: F821 – SPECPATH is injected by PyInstaller
+project_dir = Path(SPECPATH)  # noqa: F821 - SPECPATH is injected by PyInstaller
 
 # Collect all submodules + data for the large AI packages
 _collect_pkgs = ["funasr", "funasr_onnx", "modelscope"]

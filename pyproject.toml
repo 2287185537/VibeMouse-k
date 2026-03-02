@@ -15,7 +15,7 @@ classifiers = [
 ]
 authors = [{ name = "VibeMouse" }]
 dependencies = [
-  "numpy>=1.24,<2",
+  "numpy>=1.24",
   "sounddevice>=0.4.6",
   "soundfile>=0.12.1",
   "pynput>=1.7.7",
