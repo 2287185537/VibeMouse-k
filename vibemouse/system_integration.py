@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ctypes
 import importlib
 import json
 import os
@@ -7,6 +8,10 @@ import subprocess
 import sys
 from collections.abc import Mapping
 from typing import Protocol, cast
+
+
+class _POINT(ctypes.Structure):
+    _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
 
 
 _TERMINAL_CLASS_HINTS: set[str] = {
@@ -120,6 +125,40 @@ class NoopSystemIntegration:
 
 
 class WindowsSystemIntegration(NoopSystemIntegration):
+    def is_text_input_focused(self) -> bool | None:
+        from vibemouse.windows_focus import is_text_input_focused_win
+
+        return is_text_input_focused_win()
+
+    def is_terminal_window_active(self) -> bool | None:
+        try:
+            hwnd = ctypes.windll.user32.GetForegroundWindow()  # type: ignore[attr-defined]
+            if not hwnd:
+                return False
+            length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)  # type: ignore[attr-defined]
+            buf = ctypes.create_unicode_buffer(length + 1)
+            ctypes.windll.user32.GetWindowTextW(hwnd, buf, length + 1)  # type: ignore[attr-defined]
+            title = buf.value.lower()
+            return any(hint in title for hint in _TERMINAL_TITLE_HINTS)
+        except Exception:
+            return None
+
+    def cursor_position(self) -> tuple[int, int] | None:
+        try:
+            pt = _POINT()
+            ok = ctypes.windll.user32.GetCursorPos(ctypes.byref(pt))  # type: ignore[attr-defined]
+            if not ok:
+                return None
+            return int(pt.x), int(pt.y)
+        except Exception:
+            return None
+
+    def move_cursor(self, *, x: int, y: int) -> bool:
+        try:
+            return bool(ctypes.windll.user32.SetCursorPos(x, y))  # type: ignore[attr-defined]
+        except Exception:
+            return False
+
     def paste_shortcuts(self, *, terminal_active: bool) -> tuple[tuple[str, str], ...]:
         if terminal_active:
             return (
@@ -263,6 +302,8 @@ def create_system_integration(
 
 
 def probe_text_input_focus_via_atspi(*, timeout_s: float = 1.5) -> bool:
+    if sys.platform != "linux":
+        return False
     script = (
         "import gi\n"
         "gi.require_version('Atspi', '2.0')\n"
@@ -297,6 +338,8 @@ def probe_text_input_focus_via_atspi(*, timeout_s: float = 1.5) -> bool:
 
 
 def load_atspi_module() -> object | None:
+    if sys.platform != "linux":
+        return None
     try:
         gi = importlib.import_module("gi")
         require_version = cast(_RequireVersionFn, getattr(gi, "require_version"))
@@ -310,6 +353,8 @@ def load_atspi_module() -> object | None:
 def probe_send_enter_via_atspi(
     *, atspi_module: object | None = None, lazy_load: bool = True
 ) -> bool:
+    if sys.platform != "linux":
+        return False
     module = atspi_module
     if module is None and lazy_load:
         module = load_atspi_module()
